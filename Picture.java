@@ -18,6 +18,7 @@ public class Picture extends SimplePicture
     ///////////////////// constructors //////////////////////////////////
     private final int LOW_FILTER = 4;
     private final int HIGH_FILTER = 64;
+    public Object explore;
 
     /**
      * Constructor that takes no arguments 
