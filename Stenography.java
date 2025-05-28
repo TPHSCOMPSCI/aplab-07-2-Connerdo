@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.util.*;
+import java.util.ArrayList;
 public class Stenography {
     public static void main(String[] args) {
         Picture beach = new Picture("beach.jpg");
@@ -59,7 +60,6 @@ public class Stenography {
         
         Picture motorcyle = new Picture("blueMotorcycle.jpg");
         motorcyle.explore(); 
-        randomBlack(motorcyle, 400, 450);
         motorcyle.explore(); 
     }
 
@@ -238,41 +238,29 @@ public class Stenography {
             }
         }
     }
-    public static String revealText(Picture source) {
-    ArrayList<Integer> words = new ArrayList<>();
-    Pixel[][] pixels = source.getPixels2D();
-    for (Pixel[] row : pixels) {
-        for (Pixel p : row) {
-            int letter = (p.getBlue() & 3) << 4 | (p.getGreen() & 3) << 2 | (p.getRed() & 3);
-            if (letter == 0) {
-                return decodeString(words);
-            }
-            words.add(letter);
-        }
-    }
-    return decodeString(words);
-}
-   public static void randomBlack(Picture target, int width, int height) {
-        Pixel[][] grid = target.getPixels2D();
-        int maxRow = grid.length - width;
-        int maxCol = grid[0].length - height;
-        if (maxRow < 0 || maxCol < 0) {
-            System.out.println("Region too large for the image!");
-            return;
-        }
-        int startRow = (int) (Math.random() * maxRow);
-        int startCol = (int) (Math.random() * maxCol);
-        for (int r = startRow; r < startRow + height; r++) {
-            for (int c = startCol; c < startCol + width; c++) {
-                if (r < grid.length && c < grid[0].length) {
-                    Pixel p = grid[r][c];
-                    int black = (p.getRed() + p.getGreen() + p.getBlue()) / 255;
-                    p.setColor(new Color(black, black, black));
+        public static String revealText(Picture img) {
+            ArrayList<Integer> letters = new ArrayList<>();
+            Pixel[][] grid = img.getPixels2D();
+            for(int row = 0; row < grid.length; row++){
+                for(int col = 0; col < grid[row].length; col++){
+                    Pixel px = grid[row][col];
+                    Color color = px.getColor();
+                    
+                    
+                    int redMod = color.getRed() % 4;
+                    int greenMod = (color.getGreen() % 4) * 4;
+                    int blueMod = (color.getBlue() % 4) * 16;
+                   
+                   
+                    int value = redMod + greenMod + blueMod;
+                    if (value == 0){
+                        return decodeString(letters);
+                    }
+                    letters.add(value);
                 }
             }
+            return decodeString(letters);
         }
-    }
-    
 }
 
 
