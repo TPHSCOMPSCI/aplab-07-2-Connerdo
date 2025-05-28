@@ -70,28 +70,41 @@ public class Stenography {
         int blueVal = (p.getBlue() / 4) * 4;
         p.setColor(new Color(redVal, greenVal, blueVal));
     }
+    
+
+
     public static Picture testClearLow(Picture inputPic) {
-        Picture resultPic = new Picture(inputPic);
-        Pixel[][] pixelGrid = resultPic.getPixels2D();
-        for (Pixel[] row : pixelGrid) {
-            for (Pixel p : row) {
-                clearLow(p);
-            }
+        Picture copy = new Picture(inputPic);
+       for(Pixel px : copy.getPixels()) {
+            clearLow(px);
         }
-        return resultPic;
+        return copy;
     }
+
+
+
+
     public static void setLow(Pixel p, Color c) {
-        int origRed = p.getRed();
-        int origGreen = p.getGreen();
-        int origBlue = p.getBlue();
-        int lowRed = c.getRed() / 64;
+        int baseRed = (p.getRed() / 4) * 4;
+        int baseGreen = (p.getGreen() / 4) * 4;
+        int baseBlue = (p.getBlue() / 4) * 4;
+        
+        
+        int lowRed = c.getRed() / 64;  
         int lowGreen = c.getGreen() / 64;
         int lowBlue = c.getBlue() / 64;
-        origRed = (origRed / 4) * 4 + lowRed;
-        origGreen = (origGreen / 4) * 4 + lowGreen;
-        origBlue = (origBlue / 4) * 4 + lowBlue;
-        p.setColor(new Color(origRed, origGreen, origBlue));
+
+        baseRed += lowRed;
+        baseGreen += lowGreen;
+        baseBlue += lowBlue;
+
+        p.setColor(new Color(baseRed, baseGreen, baseBlue));
+
+
     }
+
+
+
     public static Picture testSetLow(Picture basePic, Color c) {
         Picture result = new Picture(basePic);
         Pixel[][] grid = result.getPixels2D();
@@ -102,6 +115,10 @@ public class Stenography {
         }
         return result;
     }
+
+
+
+
     public static Picture revealPicture(Picture hidden) {
         Picture output = new Picture(hidden);
         Pixel[][] outPixels = output.getPixels2D();
@@ -117,9 +134,15 @@ public class Stenography {
         }
         return output;
     }
+
+
+
     public static boolean canHide(Picture source, Picture secret) {
         return source.getWidth() >= secret.getWidth() && source.getHeight() >= secret.getHeight();
     }
+
+
+
     public static Picture hidePicture(Picture base, Picture hidden, int rowStart, int colStart) {
         Picture result = new Picture(base);
         Pixel[][] baseGrid = result.getPixels2D();
@@ -140,6 +163,9 @@ public class Stenography {
         }
         return result;
     }
+
+
+
     public static boolean isSame(Picture a, Picture b) {
         if (a.getWidth() != b.getWidth() || a.getHeight() != b.getHeight()) return false;
         Pixel[][] gridA = a.getPixels2D();
@@ -153,6 +179,9 @@ public class Stenography {
         }
         return true;
     }
+
+
+
     public static ArrayList<Point> findDifferences(Picture first, Picture second) {
         ArrayList<Point> diffs = new ArrayList<>();
         if (first.getWidth() != second.getWidth() || first.getHeight() != second.getHeight()) return diffs;
@@ -167,6 +196,9 @@ public class Stenography {
         }
         return diffs;
     }
+
+
+
     public static Picture showDifferentArea(Picture original, ArrayList<Point> changes) {
         Picture marked = new Picture(original);
         if (changes.isEmpty()) return marked;
@@ -186,6 +218,9 @@ public class Stenography {
         pen.dispose();
         return marked;
     }
+
+
+
     public static ArrayList<Integer> encodeString(String s) {
         s = s.toUpperCase();
         String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -198,19 +233,28 @@ public class Stenography {
         values.add(0);
         return values;
     }
-    public static String decodeString(ArrayList<Integer> codes) {
+
+
+
+    public static String decodeString(ArrayList<Integer> values) {
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String result = "";
-        String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        for (int i = 0; i < codes.size(); i++) {
-            if (codes.get(i) == 27) {
-                result = result + " ";
-            } else {
-                result = result
-                        + alpha.substring(codes.get(i) - 1, codes.get(i));
-            }
+        for (int i = 0; i < values.size(); i++) {
+            int val = values.get(i);
+            if (val == 27) {
+                result += " ";
+            } 
+            else 
+            {
+            result += alphabet.substring(val - 1, val);
         }
-        return result;
     }
+
+    return result;
+}
+
+
+
     private static int[] getBitPairs(int number) {
         int[] bits = new int[3];
         for (int i = 0; i < 3; i++) {
@@ -219,25 +263,37 @@ public class Stenography {
         }
         return bits;
     }
+
+
+
     public static void hideText(Picture source, String s) {
-        ArrayList<Integer> encoded = encodeString(s);
-        Pixel[][] pixels = source.getPixels2D();
-        int idx = 0;
-        for (int r = 0; r < pixels.length && idx < encoded.size(); r++) {
-            for (int c = 0; c < pixels[0].length && idx < encoded.size(); c++) {
-                int num = encoded.get(idx);
-                int redBit = (num % 4) / 4;
-                int greenBit = (num % 4) / 4;
-                int blueBit = num % 4;
-                Pixel p = pixels[r][c];
-                int newRed = (p.getRed() / 4) * 4 + redBit;
-                int newGreen = (p.getGreen() / 4) * 4 + greenBit;
-                int newBlue = (p.getBlue() / 4) * 4 + blueBit;
-                p.setColor(new Color(newRed, newGreen, newBlue));
-                idx++;
+        ArrayList<Integer> encodedList = encodeString(s);
+        Pixel[][] pixels = source.getPixels2D();       
+       
+        int index = 0;
+        for (int row = 0; row < pixels.length; row++) {
+            for (int col = 0; col < pixels[row].length; col++) {
+                if (index >= encodedList.size()) {
+                return; 
             }
+            Pixel p = pixels[row][col];
+            clearLow(p);
+
+            int value = encodedList.get(index);
+            int[] bits = getBitPairs(value); 
+
+            int red = p.getRed() + bits[0];
+            int green = p.getGreen() + bits[1];
+            int blue = p.getBlue() + bits[2];
+
+            p.setColor(new Color(red, green, blue));
+            index++;
         }
     }
+}
+
+
+
         public static String revealText(Picture img) {
             ArrayList<Integer> letters = new ArrayList<>();
             Pixel[][] grid = img.getPixels2D();
